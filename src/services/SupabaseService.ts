@@ -7,7 +7,7 @@ export class SupabaseService {
   async getFile(fileName: string) {
     const { data, error } = await _supabase.storage
       .from("documents")
-      .download(fileName);
+      .download(`public/${fileName}`);
 
     if (error) {
       throw error;
@@ -33,6 +33,7 @@ export class SupabaseService {
         .upload(`public/${file.originalname}`, file.buffer);
       return data;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

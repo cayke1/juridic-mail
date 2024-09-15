@@ -16,5 +16,6 @@ const documentRoutes = Router();
 
 documentRoutes.post("/", upload.single('document') ,documentController.create);
 documentRoutes.get("/:id", documentController.get);
+documentRoutes.post("/:id/send", documentController.sendDocuments);
 
 export { documentRoutes }
