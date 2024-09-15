@@ -19,7 +19,7 @@ export class AuthController {
       name,
       email,
       password,
-      created_at: new Date(Date.now()).toISOString(),
+      created_at: new Date(Date.now()),
     };
     const newUser = await this.userService.signup(user);
 

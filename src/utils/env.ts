@@ -6,6 +6,8 @@ const schema = z.object({
   DIRECT_URL: z.string(),
   PORT: z.string(),
   JWT_SECRET: z.string(),
+  SUPABASE_URL: z.string(),
+  SUPABASE_PUBLIC_KEY: z.string(),
 });
 
 const env = schema.parse(process.env);
