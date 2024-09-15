@@ -31,8 +31,6 @@ export class SupabaseService {
       const data = await _supabase.storage
         .from("documents")
         .upload(`public/${file.originalname}`, file.buffer);
-
-      console.log(data);
       return data;
     } catch (error) {
       throw error;

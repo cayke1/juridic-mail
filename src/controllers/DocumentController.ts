@@ -32,12 +32,12 @@ export class DocumentController {
       created_at: new Date(Date.now()),
     };
 
-    const insertedDocument = await this.documentService.createDocument(
-      document
-    );
+    //    const insertedDocument = await this.documentService.createDocument(
+    //    document
+    //);
     await this.supabaseService.uploadFile(file);
 
-    return res.status(201).json(insertedDocument);
+    return res.status(201).json("ok");
   }
 
   async get(req: Request, res: Response) {

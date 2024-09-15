@@ -10,7 +10,7 @@ const documentService = new DocumentService(documentRepository);
 const supabaseService = new SupabaseService();
 const documentController = new DocumentController(documentService, supabaseService);
 
-const upload = multer({ 'dest': '/tmp' })
+const upload = multer({ storage: multer.memoryStorage() });
 
 const documentRoutes = Router();
 
