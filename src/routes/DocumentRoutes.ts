@@ -16,6 +16,7 @@ const documentRoutes = Router();
 
 documentRoutes.post("/", upload.single('document') ,documentController.create);
 documentRoutes.get("/:id", documentController.get);
-documentRoutes.post("/:id/send", documentController.sendDocuments);
+documentRoutes.post("/:id/send", documentController.sendDocumentsFromSupabase);
+documentRoutes.post("/send", upload.single('document'), documentController.sendWithoutSave);
 
 export { documentRoutes }

@@ -16,7 +16,7 @@ export class SendMailService {
       },
     });
   }
-  async execute(recipients: string[], pdfContent: Blob): Promise<void> {
+  async execute(recipients: string[], pdfContent: Buffer): Promise<void> {
     try {
       const mailOptions = {
         from: env.EMAIL_USER,
@@ -26,7 +26,7 @@ export class SendMailService {
         attachments: [
           {
             filename: "pdf.pdf",
-            content: await this.blobToBuffer(pdfContent),
+            content: pdfContent,
             contentType: "application/pdf",
           },
         ],
@@ -40,9 +40,5 @@ export class SendMailService {
       console.error(error);
       throw new InternalServerError("Error sending email");
     }
-  }
-
-  private async blobToBuffer(blob: Blob): Promise<Buffer> {
-    return Buffer.from(await blob.arrayBuffer());
   }
 }

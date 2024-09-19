@@ -1,70 +1,70 @@
-name: Deploy NodeJs
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+# name: Deploy NodeJs
+# on:
+#   push:
+#     branches: [main]
+#   workflow_dispatch:
 
-env:
-  REGISTRY: docker.io
-  REPO: cayke1/paymepls
-  CONTAINER: paymepls
-  PORT: 3395  # A porta que sua aplicação usará
+# env:
+#   REGISTRY: docker.io
+#   REPO: cayke1/paymepls
+#   CONTAINER: paymepls
+#   PORT: 3395  # A porta que sua aplicação usará
 
-jobs:
-  push_to_registry:
-    name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+# jobs:
+#   push_to_registry:
+#     name: Push Docker image to Docker Hub
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Check out the repo
+#         uses: actions/checkout@v2
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ${{ env.REPO }}:latest
+#       - name: Build and Push Docker image
+#         uses: docker/build-push-action@v2
+#         with:
+#           context: .
+#           push: true
+#           tags: ${{ env.REPO }}:latest
 
-  deploy:
-    needs: [push_to_registry]
-    name: Deploy to VPS
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup SSH connection
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
+#   deploy:
+#     needs: [push_to_registry]
+#     name: Deploy to VPS
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Setup SSH connection
+#         uses: webfactory/ssh-agent@v0.5.3
+#         with:
+#           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Adding Known Hosts
-        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+#       - name: Adding Known Hosts
+#         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Login to Docker Hub
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin"
+#       - name: Login to Docker Hub
+#         run: |
+#           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin"
 
-      - name: Pull latest container from Docker Hub
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker pull ${REGISTRY}/${REPO}:latest"
+#       - name: Pull latest container from Docker Hub
+#         run: |
+#           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker pull ${REGISTRY}/${REPO}:latest"
 
-      - name: Stop deployed container
-        continue-on-error: true
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker stop ${{ env.CONTAINER }}"
+#       - name: Stop deployed container
+#         continue-on-error: true
+#         run: |
+#           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker stop ${{ env.CONTAINER }}"
 
-      - name: Remove deployed container
-        continue-on-error: true
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker rm ${{ env.CONTAINER }}"
+#       - name: Remove deployed container
+#         continue-on-error: true
+#         run: |
+#           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker rm ${{ env.CONTAINER }}"
 
-      - name: Start docker container
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker run -p ${{ env.PORT }}:${{ env.PORT }} -d --restart unless-stopped --name=${{ env.CONTAINER }} -e NODE_ENV=production -e DATABASE_URL=${{ secrets.DATABASE_URL }} -e DIRECT_URL=${{ secrets.DIRECT_URL }} -e PORT=${{ env.PORT }} -e JWT_SECRET=${{ secrets.JWT_SECRET }} ${REGISTRY}/${REPO}:latest"
+#       - name: Start docker container
+#         run: |
+#           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker run -p ${{ env.PORT }}:${{ env.PORT }} -d --restart unless-stopped --name=${{ env.CONTAINER }} -e NODE_ENV=production -e DATABASE_URL=${{ secrets.DATABASE_URL }} -e DIRECT_URL=${{ secrets.DIRECT_URL }} -e PORT=${{ env.PORT }} -e JWT_SECRET=${{ secrets.JWT_SECRET }} ${REGISTRY}/${REPO}:latest"
 
-      - name: Logout from Docker Hub
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker logout"
+#       - name: Logout from Docker Hub
+#         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker logout"

@@ -17,7 +17,7 @@ export class DocumentController {
   ) {
     this.create = this.create.bind(this);
     this.get = this.get.bind(this);
-    this.sendDocuments = this.sendDocuments.bind(this);
+    this.sendDocumentsFromSupabase = this.sendDocumentsFromSupabase.bind(this);
   }
   async create(req: Request, res: Response) {
     const file = req.file;
@@ -53,7 +53,7 @@ export class DocumentController {
     return res.status(200).json(url);
   }
 
-  async sendDocuments(req: Request, res: Response) {
+  async sendDocumentsFromSupabase(req: Request, res: Response) {
     const sendMailService = new SendMailService();
     const { recipients } = req.body;
     const { id } = req.params;
@@ -62,16 +62,40 @@ export class DocumentController {
       throw document;
     }
     const pdf = await this.supabaseService.getFile(document.title);
+
+    const buffer = await this.blobToBuffer(pdf as Blob);
     if (pdf instanceof Error) {
       throw pdf;
     }
     try {
-      await sendMailService.execute(recipients, pdf);
+      await sendMailService.execute(recipients, buffer);
 
       return res.status(200).json({ message: "Email sent" });
     } catch (error) {
       console.log(error);
       throw new InternalServerError("Error sending email");
     }
+  }
+
+  async sendWithoutSave(req: Request, res: Response) {
+    const sendMailService = new SendMailService();
+    const { recipients } = req.body;
+    const file = req.file;
+    if (!file) {
+      throw new BadRequestError("File not found");
+    }
+    const buffer = file.buffer;
+    try {
+      await sendMailService.execute([recipients], buffer);
+
+      return res.status(200).json({ message: "Email sent" });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerError("Error sending email");
+    }
+  }
+
+  private async blobToBuffer(blob: Blob): Promise<Buffer> {
+    return Buffer.from(await blob.arrayBuffer());
   }
 }
